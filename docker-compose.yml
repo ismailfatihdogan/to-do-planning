@@ -1,0 +1,72 @@
+version: '3.9'
+services:
+    app:
+        container_name: 'tdp-app'
+        image: 'tdp-app'
+        build:
+            context: .
+            dockerfile: ./docker/app/Dockerfile
+        ports:
+            - '${FORWARD_APP_PORT:-8080}:80'
+        volumes:
+            - type: bind
+              source: ./
+              target: /var/www
+        depends_on:
+            - mysql
+            - redis
+        networks:
+            - tdp_network
+    supervisor:
+        container_name: 'tdp-supervisor'
+        image: 'tdp-app'
+        volumes:
+            - type: bind
+              source: ./
+              target: /var/www
+        depends_on:
+            - app
+            - mysql
+        command: 'supervisord'
+        networks:
+            - tdp_network
+    mysql:
+        container_name: 'tdp-mysql'
+        build:
+            context: .
+            dockerfile: ./docker/mysql/Dockerfile
+        ports:
+            - '${FORWARD_MYSQL_PORT:-3308}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD:-root}'
+            MYSQL_DATABASE: '${DB_DATABASE:-tdp}'
+            MYSQL_USER: '${DB_USERNAME:-user}'
+            MYSQL_PASSWORD: '${DB_PASSWORD:-password}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        volumes:
+            - type: volume
+              source: db-store
+              target: /var/lib/mysql
+              volume:
+                  nocopy: true
+        networks:
+            - tdp_network
+    redis:
+        container_name: 'tdp-redis'
+        image: 'redis:alpine'
+        ports:
+            - '${FORWARD_REDIS_PORT:-61379}:6379'
+        volumes:
+            - type: volume
+              source: redis-store
+              target: /data
+              volume:
+                  nocopy: true
+        networks:
+            - tdp_network
+networks:
+    tdp_network:
+        driver: bridge
+volumes:
+    db-store:
+    redis-store:
