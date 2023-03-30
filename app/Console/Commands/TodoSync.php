@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Context\ProviderContext;
 use App\Models\Provider;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,14 +28,21 @@ class TodoSync extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         /** @var Collection<Provider> $providers */
         $providers = Provider::query()->where('status', true)->get();
+        $providerContext = new ProviderContext();
+
+        $totalTask = 0;
 
         foreach ($providers as $provider) {
-            app($provider->class_path, ['provider' => $provider])->sendQueue();
+            $totalTask += $providerContext
+                ->setProviderService(app($provider->class_path, ['provider' => $provider]))
+                ->run();
         }
+
+        $this->info(sprintf('Successfully imported %s jobs from %s providers', $totalTask, count($providers)));
 
         return Command::SUCCESS;
     }
