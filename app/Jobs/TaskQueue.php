@@ -32,7 +32,7 @@ class TaskQueue implements ShouldQueue, ShouldBeUnique
 
     public function fire(Job $job, array $data)
     {
-        $task = $this->taskRepository->create($data);
+        $task = $this->taskRepository->firstOrCreate($data);
 
         Queue::push(TaskDeveloperAssignQueue::class, $task->getAttributes());
 

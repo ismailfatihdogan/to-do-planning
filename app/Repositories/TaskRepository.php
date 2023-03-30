@@ -4,12 +4,19 @@ namespace App\Repositories;
 
 use App\Interfaces\Repositories\TaskRepositoryInterface;
 use App\Models\Task;
+use Illuminate\Support\Arr;
 
 class TaskRepository implements TaskRepositoryInterface
 {
-    public function create(array $data): Task
+    public function firstOrCreate(array $data): Task
     {
-        return Task::query()->create($data);
+        return Task::query()->firstOrCreate(
+            [
+                'provider_id' => $data['provider_id'],
+                'title' => $data['title']
+            ],
+            Arr::except($data, ['provider_id', 'title'])
+        );
     }
 
     public function updateById($id, $data): int
