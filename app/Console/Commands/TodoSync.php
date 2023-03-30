@@ -36,6 +36,8 @@ class TodoSync extends Command
             app($provider->class_path, ['provider' => $provider])->sendQueue();
         }
 
+        $this->info(sprintf('%s providers tasks imported', count($providers)));
+
         return Command::SUCCESS;
     }
 }
