@@ -8,5 +8,5 @@ interface ProviderServiceInterface
 {
     public function __construct(Provider $provider);
 
-    public function sendQueue(): void;
+    public function sendQueue(): int;
 }

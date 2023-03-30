@@ -12,9 +12,11 @@ class FirstProviderService extends ProviderServiceAbstract implements ProviderSe
         $this->setProvider($provider);
     }
 
-    public function sendQueue(): void
+    public function sendQueue(): int
     {
-        foreach ($this->request('GET') as $task) {
+        $tasks = $this->request('GET');
+
+        foreach ($tasks as $task) {
             $this->pushQueue([
                 'provider_id' => $this->getProvider()->id,
                 'title' => $task['id'],
@@ -22,5 +24,7 @@ class FirstProviderService extends ProviderServiceAbstract implements ProviderSe
                 'time' => $task['sure']
             ]);
         }
+
+        return count($tasks);
     }
 }
